@@ -47,14 +47,12 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
 
     public SwipeFlingAdapterView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SwipeFlingAdapterView, defStyle, 0);
         MAX_VISIBLE = a.getInt(R.styleable.SwipeFlingAdapterView_max_visible, MAX_VISIBLE);
         MIN_ADAPTER_STACK = a.getInt(R.styleable.SwipeFlingAdapterView_min_adapter_stack, MIN_ADAPTER_STACK);
         ROTATION_DEGREES = a.getFloat(R.styleable.SwipeFlingAdapterView_rotation_degrees, ROTATION_DEGREES);
         a.recycle();
     }
-
 
     /**
      * A shortcut method to set both the listeners and the adapter.
@@ -75,7 +73,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
     }
 
     @Override
-    public View getSelectedView() {
+    public View getTopView() {
         return mTopView;
     }
 
