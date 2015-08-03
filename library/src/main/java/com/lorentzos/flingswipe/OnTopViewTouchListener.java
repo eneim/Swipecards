@@ -2,12 +2,12 @@ package com.lorentzos.flingswipe;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.graphics.PointF;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 
 /**
@@ -41,6 +41,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     private float aDownTouchY;
     // The active pointer is the one currently moving our object.
     private int mActivePointerId = INVALID_POINTER_ID;
+    private ViewGroup mParent = null;
     private View mFrame = null;
     private int touchPosition;
     private boolean isAnimationRunning = false;
@@ -51,6 +52,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     }
 
     public OnTopViewTouchListener(ViewGroup parent, View frame, float rotationDegree) {
+        this.mParent = parent;
         this.mFrame = frame;
         this.frameX = frame.getX();
         this.frameY = frame.getY();
@@ -165,25 +167,20 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     }
 
     private float getScrollProgressPercent() {
-        if (movedBeyondLeftBorder()) {
-            return -1f;
-        } else if (movedBeyondRightBorder()) {
-            return 1f;
-        } else {
-            float zeroToOneValue = (aPosX + frameHalfWidth - leftBorder()) / (rightBorder() - leftBorder());
-            return zeroToOneValue * 2f - 1f;
-        }
+        float zeroToOneValue = (mFrame.getX() + frameHalfWidth - leftBorder()) /
+                (rightBorder() - leftBorder());
+        if (zeroToOneValue < 0) zeroToOneValue = 0.f;
+        if (zeroToOneValue > 1) zeroToOneValue = 1.f;
+        return zeroToOneValue * 2f - 1f;
     }
 
     private boolean resetCardViewOnStack() {
         if (movedBeyondLeftBorder()) {
             // Left Swipe
-            onSelected(true, getExitPoint(-frameWidth), SELECT_ITEM_DURATION);
-            onFlingTopView(-1.0f);
+            swipeTopView(true, getExitPoint(-frameWidth), SELECT_ITEM_DURATION);
         } else if (movedBeyondRightBorder()) {
             // Right Swipe
-            onSelected(false, getExitPoint(parentWidth), SELECT_ITEM_DURATION);
-            onFlingTopView(1.0f);
+            swipeTopView(false, getExitPoint(parentWidth), SELECT_ITEM_DURATION);
         } else {
             float absMoveDistance = Math.abs(aPosX - frameX);
             aPosX = 0;
@@ -213,42 +210,77 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     }
 
     public float leftBorder() {
-        return parentWidth / 4.f;
+        return parentWidth / 6.f;
     }
 
     public float rightBorder() {
-        return 3 * parentWidth / 4.f;
+        return 5 * parentWidth / 6.f;
     }
 
-
-    public void onSelected(final boolean isLeft, float exitY, long duration) {
+    public void swipeTopView(final boolean isSwipeToLeft, final float exitY, long duration) {
         isAnimationRunning = true;
-        float exitX;
-        if (isLeft) {
+        final float exitX;
+        if (isSwipeToLeft) {
             exitX = -frameWidth - getRotationWidthOffset();
         } else {
             exitX = parentWidth + getRotationWidthOffset();
         }
 
-        this.mFrame.animate()
-                .setDuration(duration)
-                .setInterpolator(new AccelerateInterpolator())
-                .x(exitX)
-                .y(exitY)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        if (isLeft) {
-                            onExited();
-                            onExitToLeft(mFrame);
-                        } else {
-                            onExited();
-                            onExitToRight(mFrame);
-                        }
-                        isAnimationRunning = false;
-                    }
-                })
-                .rotation(getExitRotation(isLeft));
+        final float fromX = mFrame.getLeft() + mFrame.getTranslationX();
+        final float fromY = mFrame.getTop() + mFrame.getTranslationY();
+        final float fromFactor = getScrollProgressPercent();
+
+        ValueAnimator animator = ValueAnimator.ofFloat(Math.abs(fromFactor), 1.0f);
+        animator.setDuration(SELECT_ITEM_DURATION);
+//        animator.setInterpolator(new AccelerateInterpolator());
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float factor = (float) animation.getAnimatedValue();
+                float animatedX = exitX * factor + fromX * (1.f - factor);
+                float animatedY = exitY * factor + fromY * (1.f - factor);
+                mFrame.setX(animatedX);
+                mFrame.setY(animatedY);
+                mFrame.setRotation(getExitRotation(isSwipeToLeft, factor));
+                onFlingTopView(factor);
+            }
+        });
+
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (isSwipeToLeft) {
+                    onExited();
+                    onExitToLeft(mFrame);
+                } else {
+                    onExited();
+                    onExitToRight(mFrame);
+                }
+                isAnimationRunning = false;
+            }
+        });
+
+        animator.start();
+
+//        this.mFrame.animate()
+//                .setDuration(duration)
+//                .setInterpolator(new AccelerateInterpolator())
+//                .x(exitX)
+//                .y(exitY)
+//                .setListener(new AnimatorListenerAdapter() {
+//                    @Override
+//                    public void onAnimationEnd(Animator animation) {
+//                        if (isSwipeToLeft) {
+//                            onExited();
+//                            onExitToLeft(mFrame);
+//                        } else {
+//                            onExited();
+//                            onExitToRight(mFrame);
+//                        }
+//                        isAnimationRunning = false;
+//                    }
+//                })
+//                .rotation(getExitRotation(isSwipeToLeft));
     }
 
     /**
@@ -256,7 +288,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
      */
     public void selectLeft() {
         if (!isAnimationRunning) {
-            onSelected(true, frameY, SELECT_ITEM_DURATION);
+            swipeTopView(true, frameY, SELECT_ITEM_DURATION);
         }
     }
 
@@ -265,7 +297,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
      */
     public void selectRight() {
         if (!isAnimationRunning) {
-            onSelected(false, frameY, SELECT_ITEM_DURATION);
+            swipeTopView(false, frameY, SELECT_ITEM_DURATION);
         }
     }
 
@@ -281,7 +313,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
 
         LinearRegression regression = new LinearRegression(x, y);
 
-        //Your typical y = ax+b linear regression
+        // Your typical y = ax+b linear regression
         return (float) regression.slope() * exitXPoint + (float) regression.intercept();
     }
 
@@ -296,6 +328,16 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
         return rotation;
     }
 
+    private float getExitRotation(boolean isLeft, float factor) {
+        float rotation = BASE_ROTATION_DEGREES * 2.f * factor;
+        if (touchPosition == TOUCH_BELOW) {
+            rotation = -rotation;
+        }
+        if (isLeft) {
+            rotation = -rotation;
+        }
+        return rotation;
+    }
 
     /**
      * When the object rotates it's width becomes bigger.
@@ -326,25 +368,21 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     abstract void onExited();
 
     /**
-     *
      * @param view
      */
     abstract void onExitToLeft(View view);
 
     /**
-     *
      * @param view
      */
     abstract void onExitToRight(View view);
 
     /**
-     *
      * @param view
      */
     abstract void onClickTopView(View view);
 
     /**
-     *
      * @param offset
      */
     abstract void onFlingTopView(float offset);
