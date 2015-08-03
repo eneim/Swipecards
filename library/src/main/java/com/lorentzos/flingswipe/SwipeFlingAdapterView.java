@@ -221,7 +221,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
                     @Override
                     void onExited() {
                         mTopView = null;
-                        mFlingListener.onExited();
+                        mFlingListener.onTopExited();
                     }
 
                     @Override
@@ -237,7 +237,8 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
                     @Override
                     void onClickTopView(View view) {
                         if (mOnItemClickListener != null)
-                            mOnItemClickListener.onItemClicked(0, view);
+                            mOnItemClickListener.onItemClick(SwipeFlingAdapterView.this, view, 0,
+                                    getItemIdAtPosition(0));
                     }
 
                     @Override
@@ -332,13 +333,13 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
     }
 
 
-    public interface OnItemClickListener {
-        void onItemClicked(int itemPosition, View dataObject);
-    }
+//    public interface OnItemClickListener {
+//        void onItemClicked(int itemPosition, View view);
+//    }
 
     public interface OnSwipeListener {
 
-        void onExited();
+        void onTopExited();
 
         void onExitToLeft(View dataObject);
 

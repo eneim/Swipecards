@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -20,7 +21,7 @@ import butterknife.OnClick;
 public class MyActivity extends Activity {
 
     @InjectView(R.id.frame)
-    SwipeFlingAdapterView flingContainer;
+    SwipeFlingAdapterView mFlingView;
     private ArrayList<String> al;
     private ArrayAdapter<String> arrayAdapter;
     private int i;
@@ -43,10 +44,10 @@ public class MyActivity extends Activity {
 
         arrayAdapter = new ArrayAdapter<>(this, R.layout.item, R.id.helloText, al);
 
-        flingContainer.setAdapter(arrayAdapter);
-        flingContainer.setFlingListener(new SwipeFlingAdapterView.OnSwipeListener() {
+        mFlingView.setAdapter(arrayAdapter);
+        mFlingView.setFlingListener(new SwipeFlingAdapterView.OnSwipeListener() {
             @Override
-            public void onExited() {
+            public void onTopExited() {
                 // this is the simplest way to delete an object from the Adapter (/AdapterView)
                 Log.d("LIST", "removed object!");
                 al.remove(0);
@@ -77,16 +78,16 @@ public class MyActivity extends Activity {
 
             @Override
             public void onFlingTopView(float offset) {
-                View view = flingContainer.getSelectedView();
+                View view = mFlingView.getSelectedView();
                 view.findViewById(R.id.item_swipe_right_indicator).setAlpha(offset < 0 ? -offset : 0);
                 view.findViewById(R.id.item_swipe_left_indicator).setAlpha(offset > 0 ? offset : 0);
             }
         });
 
         // Optionally add an OnItemClickListener
-        flingContainer.setOnItemClickListener(new SwipeFlingAdapterView.OnItemClickListener() {
+        mFlingView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClicked(int itemPosition, View dataObject) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 makeToast(MyActivity.this, "Clicked!");
             }
         });
@@ -98,12 +99,12 @@ public class MyActivity extends Activity {
         /**
          * Trigger the right event manually.
          */
-        flingContainer.getTopCardListener().selectRight();
+        mFlingView.getTopCardListener().selectRight();
     }
 
     @OnClick(R.id.left)
     public void left() {
-        flingContainer.getTopCardListener().selectLeft();
+        mFlingView.getTopCardListener().selectLeft();
     }
 
 
