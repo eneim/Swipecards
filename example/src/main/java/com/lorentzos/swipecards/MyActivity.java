@@ -19,12 +19,15 @@ import butterknife.OnClick;
 
 public class MyActivity extends Activity {
 
+    @InjectView(R.id.frame)
+    SwipeFlingAdapterView flingContainer;
     private ArrayList<String> al;
     private ArrayAdapter<String> arrayAdapter;
     private int i;
 
-    @InjectView(R.id.frame) SwipeFlingAdapterView flingContainer;
-
+    static void makeToast(Context ctx, String s) {
+        Toast.makeText(ctx, s, Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,19 +35,13 @@ public class MyActivity extends Activity {
         setContentView(R.layout.activity_my);
         ButterKnife.inject(this);
 
-
         al = new ArrayList<>();
-        al.add("php");
-        al.add("c");
-        al.add("python");
-        al.add("java");
-        al.add("html");
-        al.add("c++");
-        al.add("css");
-        al.add("javascript");
+        for (int i = 0; i < 13; i++) {
+            al.add((i + 1) + "");
+        }
+        i = al.size();
 
-        arrayAdapter = new ArrayAdapter<>(this, R.layout.item, R.id.helloText, al );
-
+        arrayAdapter = new ArrayAdapter<>(this, R.layout.item, R.id.helloText, al);
 
         flingContainer.setAdapter(arrayAdapter);
         flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
@@ -72,7 +69,7 @@ public class MyActivity extends Activity {
             @Override
             public void onAdapterAboutToEmpty(int itemsInAdapter) {
                 // Ask for more data here
-                al.add("XML ".concat(String.valueOf(i)));
+                al.add((i + 1) + "");
                 arrayAdapter.notifyDataSetChanged();
                 Log.d("LIST", "notified");
                 i++;
@@ -97,11 +94,6 @@ public class MyActivity extends Activity {
 
     }
 
-    static void makeToast(Context ctx, String s){
-        Toast.makeText(ctx, s, Toast.LENGTH_SHORT).show();
-    }
-
-
     @OnClick(R.id.right)
     public void right() {
         /**
@@ -114,8 +106,6 @@ public class MyActivity extends Activity {
     public void left() {
         flingContainer.getTopCardListener().selectLeft();
     }
-
-
 
 
 }
