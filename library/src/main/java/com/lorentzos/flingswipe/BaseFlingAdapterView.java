@@ -33,6 +33,7 @@ abstract class BaseFlingAdapterView extends AdapterView {
         throw new UnsupportedOperationException("Not supported");
     }
 
+    @Deprecated
     @Override
     public View getSelectedView() {
         return getTopView();
@@ -45,11 +46,11 @@ abstract class BaseFlingAdapterView extends AdapterView {
         this.heightMeasureSpec = heightMeasureSpec;
     }
 
-    public int getWidthMeasureSpec() {
+    protected int getWidthMeasureSpec() {
         return widthMeasureSpec;
     }
 
-    public int getHeightMeasureSpec() {
+    protected int getHeightMeasureSpec() {
         return heightMeasureSpec;
     }
 

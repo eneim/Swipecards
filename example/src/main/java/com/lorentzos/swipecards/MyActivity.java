@@ -100,6 +100,7 @@ public class MyActivity extends Activity {
          * Trigger the right event manually.
          */
         mFlingView.getTopCardListener().swipeToRight();
+        mFlingView.getSelectedView();
     }
 
     @OnClick(R.id.left)
