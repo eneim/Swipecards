@@ -34,7 +34,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
     private boolean isInLayout = false;
     private View mTopView = null;
     private OnItemClickListener mOnItemClickListener;
-    private FlingCardListener flingCardListener;
+    private OnTopViewTouchListener onTopViewTouchListener;
     private PointF mLastTouchPoint;
 
     public SwipeFlingAdapterView(Context context) {
@@ -100,8 +100,8 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
         } else {
             View topCard = getChildAt(LAST_OBJECT_IN_STACK);
             if (mTopView != null && topCard != null && topCard == mTopView) {
-                if (this.flingCardListener.isTouching()) {
-                    PointF lastPoint = this.flingCardListener.getLastPoint();
+                if (this.onTopViewTouchListener.isTouching()) {
+                    PointF lastPoint = this.onTopViewTouchListener.getLastPoint();
                     if (this.mLastTouchPoint == null || !this.mLastTouchPoint.equals(lastPoint)) {
                         this.mLastTouchPoint = lastPoint;
                         removeViewsInLayout(0, LAST_OBJECT_IN_STACK);
@@ -217,7 +217,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
         if (getChildCount() > 0) {
             mTopView = getChildAt(LAST_OBJECT_IN_STACK);
             if (mTopView != null) {
-                flingCardListener = new FlingCardListener(this, mTopView, ROTATION_DEGREES) {
+                onTopViewTouchListener = new OnTopViewTouchListener(this, mTopView, ROTATION_DEGREES) {
                     @Override
                     void onExited() {
                         mTopView = null;
@@ -248,7 +248,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
                     }
                 };
 
-                mTopView.setOnTouchListener(flingCardListener);
+                mTopView.setOnTouchListener(onTopViewTouchListener);
             }
         }
     }
@@ -278,11 +278,11 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
         }
     }
 
-    public FlingCardListener getTopCardListener() throws NullPointerException {
-        if (flingCardListener == null) {
+    public OnTopViewTouchListener getTopCardListener() throws NullPointerException {
+        if (onTopViewTouchListener == null) {
             throw new NullPointerException();
         }
-        return flingCardListener;
+        return onTopViewTouchListener;
     }
 
     public void setMaxVisible(int MAX_VISIBLE) {
@@ -297,7 +297,6 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
     public Adapter getAdapter() {
         return mAdapter;
     }
-
 
     @Override
     public void setAdapter(Adapter adapter) {
@@ -322,20 +321,14 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
         this.mOnItemClickListener = onItemClickListener;
     }
 
-
     @Override
     public LayoutParams generateLayoutParams(AttributeSet attrs) {
         return new FrameLayout.LayoutParams(getContext(), attrs);
     }
 
-    float dpToPx(float dp) {
+    private final float dpToPx(float dp) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
     }
-
-
-//    public interface OnItemClickListener {
-//        void onItemClicked(int itemPosition, View view);
-//    }
 
     public interface OnSwipeListener {
 

@@ -18,8 +18,8 @@ import android.view.animation.OvershootInterpolator;
  */
 
 
-public abstract class FlingCardListener implements View.OnTouchListener {
-    private static final String TAG = FlingCardListener.class.getSimpleName();
+public abstract class OnTopViewTouchListener implements View.OnTouchListener {
+    private static final String TAG = OnTopViewTouchListener.class.getSimpleName();
     private static final Object LOCK = new Object();
 
     private final int INVALID_POINTER_ID = -1;
@@ -46,11 +46,11 @@ public abstract class FlingCardListener implements View.OnTouchListener {
     private boolean isAnimationRunning = false;
     private float MAX_COS = (float) Math.cos(Math.toRadians(45));
 
-    public FlingCardListener(ViewGroup parent, View view) {
+    public OnTopViewTouchListener(ViewGroup parent, View view) {
         this(parent, view, 15.f);
     }
 
-    public FlingCardListener(ViewGroup parent, View frame, float rotationDegree) {
+    public OnTopViewTouchListener(ViewGroup parent, View frame, float rotationDegree) {
         this.mFrame = frame;
         this.frameX = frame.getX();
         this.frameY = frame.getY();
