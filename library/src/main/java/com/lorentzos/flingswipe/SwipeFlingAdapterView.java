@@ -23,13 +23,13 @@ import android.widget.FrameLayout;
 
 public class SwipeFlingAdapterView extends BaseFlingAdapterView {
 
-    private int MAX_VISIBLE = 4;    // 0, 1, 2, ...
+    private int MAX_VISIBLE = 4;
     private int MIN_ADAPTER_STACK = 6;
     private float ROTATION_DEGREES = 15.f;
 
     private Adapter mAdapter;
     private int LAST_OBJECT_IN_STACK = 0;
-    private onFlingListener mFlingListener;
+    private OnFlingListener mFlingListener;
     private AdapterDataSetObserver mDataSetObserver;
     private boolean mInLayout = false;
     private View mActiveCard = null;
@@ -63,8 +63,8 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
      * @param mAdapter The adapter you have to set.
      */
     public void init(final Context context, Adapter mAdapter) {
-        if (context instanceof onFlingListener) {
-            mFlingListener = (onFlingListener) context;
+        if (context instanceof OnFlingListener) {
+            mFlingListener = (OnFlingListener) context;
         } else {
             throw new RuntimeException("Activity does not implement SwipeFlingAdapterView.onFlingListener");
         }
@@ -220,39 +220,35 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
 
             mActiveCard = getChildAt(LAST_OBJECT_IN_STACK);
             if (mActiveCard != null) {
-
-                flingCardListener = new FlingCardListener(mActiveCard, mAdapter.getItem(0),
-                        ROTATION_DEGREES, new FlingCardListener.FlingListener() {
-
+                flingCardListener = new FlingCardListener(this, mActiveCard, ROTATION_DEGREES) {
                     @Override
-                    public void onCardExited() {
+                    void onCardExited() {
                         mActiveCard = null;
                         mFlingListener.removeFirstObjectInAdapter();
                     }
 
                     @Override
-                    public void leftExit(Object dataObject) {
-                        mFlingListener.onLeftCardExit(dataObject);
+                    void onLeftExit(View view) {
+                        mFlingListener.onLeftCardExit(view);
                     }
 
                     @Override
-                    public void rightExit(Object dataObject) {
-                        mFlingListener.onRightCardExit(dataObject);
+                    void onRightExit(View view) {
+                        mFlingListener.onRightCardExit(view);
                     }
 
                     @Override
-                    public void onClick(Object dataObject) {
+                    void onClick(View view) {
                         if (mOnItemClickListener != null)
-                            mOnItemClickListener.onItemClicked(0, dataObject);
-
+                            mOnItemClickListener.onItemClicked(0, view);
                     }
 
                     @Override
-                    public void onScroll(float scrollProgressPercent) {
-                        mFlingListener.onScroll(scrollProgressPercent);
-                        onTopViewFling(Math.abs(scrollProgressPercent));
+                    void onScroll(float offset) {
+                        mFlingListener.onScroll(offset);
+                        onTopViewFling(Math.abs(offset));
                     }
-                });
+                };
 
                 mActiveCard.setOnTouchListener(flingCardListener);
             }
@@ -320,7 +316,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
         }
     }
 
-    public void setFlingListener(onFlingListener onFlingListener) {
+    public void setFlingListener(OnFlingListener onFlingListener) {
         this.mFlingListener = onFlingListener;
     }
 
@@ -340,15 +336,15 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
 
 
     public interface OnItemClickListener {
-        void onItemClicked(int itemPosition, Object dataObject);
+        void onItemClicked(int itemPosition, View dataObject);
     }
 
-    public interface onFlingListener {
+    public interface OnFlingListener {
         void removeFirstObjectInAdapter();
 
-        void onLeftCardExit(Object dataObject);
+        void onLeftCardExit(View dataObject);
 
-        void onRightCardExit(Object dataObject);
+        void onRightCardExit(View dataObject);
 
         void onAdapterAboutToEmpty(int itemsInAdapter);
 

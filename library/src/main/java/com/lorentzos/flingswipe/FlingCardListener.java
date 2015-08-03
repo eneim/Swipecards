@@ -18,7 +18,7 @@ import android.view.animation.OvershootInterpolator;
  */
 
 
-public class FlingCardListener implements View.OnTouchListener {
+public abstract class FlingCardListener implements View.OnTouchListener {
 
     private static final String TAG = FlingCardListener.class.getSimpleName();
     private static final int INVALID_POINTER_ID = -1;
@@ -28,47 +28,36 @@ public class FlingCardListener implements View.OnTouchListener {
     private final int objectH;
     private final int objectW;
     private final int parentWidth;
-    private final FlingListener mFlingListener;
-    private final Object dataObject;
     private final float halfWidth;
+    private final int TOUCH_ABOVE = 0;
+    private final int TOUCH_BELOW = 1;
+    private final Object obj = new Object();
     private float BASE_ROTATION_DEGREES;
-
     private float aPosX;
     private float aPosY;
     private float aDownTouchX;
     private float aDownTouchY;
-
     // The active pointer is the one currently moving our object.
     private int mActivePointerId = INVALID_POINTER_ID;
-    private View frame = null;
-
-
-    private final int TOUCH_ABOVE = 0;
-    private final int TOUCH_BELOW = 1;
+    private View mFrame = null;
     private int touchPosition;
-    private final Object obj = new Object();
     private boolean isAnimationRunning = false;
     private float MAX_COS = (float) Math.cos(Math.toRadians(45));
 
-
-    public FlingCardListener(View frame, Object itemAtPosition, FlingListener flingListener) {
-        this(frame, itemAtPosition, 15f, flingListener);
+    public FlingCardListener(ViewGroup parent, View view) {
+        this(parent, view, 15f);
     }
 
-    public FlingCardListener(View frame, Object itemAtPosition, float rotation_degrees, FlingListener flingListener) {
-        super();
-        this.frame = frame;
+    public FlingCardListener(ViewGroup parent, View frame, float rotationDegree) {
+        this.mFrame = frame;
         this.objectX = frame.getX();
         this.objectY = frame.getY();
         this.objectH = frame.getHeight();
         this.objectW = frame.getWidth();
         this.halfWidth = objectW / 2f;
-        this.dataObject = itemAtPosition;
-        this.parentWidth = ((ViewGroup) frame.getParent()).getWidth();
-        this.BASE_ROTATION_DEGREES = rotation_degrees;
-        this.mFlingListener = flingListener;
+        this.parentWidth = parent.getWidth();
+        this.BASE_ROTATION_DEGREES = rotationDegree;
     }
-
 
     public boolean onTouch(View view, MotionEvent event) {
 
@@ -94,12 +83,12 @@ public class FlingCardListener implements View.OnTouchListener {
                     aDownTouchX = x;
                     aDownTouchY = y;
                     //to prevent an initial jump of the magnifier, aposX and aPosY must
-                    //have the values from the magnifier frame
+                    //have the values from the magnifier mFrame
                     if (aPosX == 0) {
-                        aPosX = frame.getX();
+                        aPosX = mFrame.getX();
                     }
                     if (aPosY == 0) {
-                        aPosY = frame.getY();
+                        aPosY = mFrame.getY();
                     }
 
                     if (y < objectH / 2) {
@@ -145,8 +134,7 @@ public class FlingCardListener implements View.OnTouchListener {
                 final float dx = xMove - aDownTouchX;
                 final float dy = yMove - aDownTouchY;
 
-
-                // Move the frame
+                // Move the mFrame
                 aPosX += dx;
                 aPosY += dy;
 
@@ -157,11 +145,11 @@ public class FlingCardListener implements View.OnTouchListener {
                     rotation = -rotation;
                 }
 
-                //in this area would be code for doing something with the view as the frame moves.
-                frame.setX(aPosX);
-                frame.setY(aPosY);
-                frame.setRotation(rotation);
-                mFlingListener.onScroll(getScrollProgressPercent());
+                //in this area would be code for doing something with the view as the mFrame moves.
+                mFrame.setX(aPosX);
+                mFrame.setY(aPosY);
+                mFrame.setRotation(rotation);
+                onScroll(getScrollProgressPercent());
                 break;
 
             case MotionEvent.ACTION_CANCEL: {
@@ -189,26 +177,26 @@ public class FlingCardListener implements View.OnTouchListener {
         if (movedBeyondLeftBorder()) {
             // Left Swipe
             onSelected(true, getExitPoint(-objectW), 100);
-            mFlingListener.onScroll(-1.0f);
+            onScroll(-1.0f);
         } else if (movedBeyondRightBorder()) {
             // Right Swipe
             onSelected(false, getExitPoint(parentWidth), 100);
-            mFlingListener.onScroll(1.0f);
+            onScroll(1.0f);
         } else {
             float abslMoveDistance = Math.abs(aPosX - objectX);
             aPosX = 0;
             aPosY = 0;
             aDownTouchX = 0;
             aDownTouchY = 0;
-            frame.animate()
+            mFrame.animate()
                     .setDuration(200)
                     .setInterpolator(new OvershootInterpolator(1.5f))
                     .x(objectX)
                     .y(objectY)
                     .rotation(0);
-            mFlingListener.onScroll(0.0f);
+            onScroll(0.0f);
             if (abslMoveDistance < 4.0) {
-                mFlingListener.onClick(dataObject);
+                onClick(mFrame);
             }
         }
         return false;
@@ -222,7 +210,6 @@ public class FlingCardListener implements View.OnTouchListener {
         return aPosX + halfWidth > rightBorder();
     }
 
-
     public float leftBorder() {
         return parentWidth / 4.f;
     }
@@ -232,9 +219,7 @@ public class FlingCardListener implements View.OnTouchListener {
     }
 
 
-    public void onSelected(final boolean isLeft,
-                           float exitY, long duration) {
-
+    public void onSelected(final boolean isLeft, float exitY, long duration) {
         isAnimationRunning = true;
         float exitX;
         if (isLeft) {
@@ -243,7 +228,7 @@ public class FlingCardListener implements View.OnTouchListener {
             exitX = parentWidth + getRotationWidthOffset();
         }
 
-        this.frame.animate()
+        this.mFrame.animate()
                 .setDuration(duration)
                 .setInterpolator(new AccelerateInterpolator())
                 .x(exitX)
@@ -252,18 +237,17 @@ public class FlingCardListener implements View.OnTouchListener {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         if (isLeft) {
-                            mFlingListener.onCardExited();
-                            mFlingListener.leftExit(dataObject);
+                            onCardExited();
+                            onLeftExit(mFrame);
                         } else {
-                            mFlingListener.onCardExited();
-                            mFlingListener.rightExit(dataObject);
+                            onCardExited();
+                            onRightExit(mFrame);
                         }
                         isAnimationRunning = false;
                     }
                 })
                 .rotation(getExitRotation(isLeft));
     }
-
 
     /**
      * Starts a default left exit animation.
@@ -332,18 +316,27 @@ public class FlingCardListener implements View.OnTouchListener {
         return new PointF(this.aPosX, this.aPosY);
     }
 
+    abstract void onCardExited();
+
+    abstract void onLeftExit(View view);
+
+    abstract void onRightExit(View view);
+
+    abstract void onClick(View view);
+
+    abstract void onScroll(float offset);
+
     protected interface FlingListener {
         void onCardExited();
 
-        void leftExit(Object dataObject);
+        void leftExit(View view);
 
-        void rightExit(Object dataObject);
+        void rightExit(View view);
 
-        void onClick(Object dataObject);
+        void onClick(View view);
 
         void onScroll(float scrollProgressPercent);
     }
-
 }
 
 
