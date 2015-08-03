@@ -121,7 +121,6 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
         if (adapterCount <= MIN_ADAPTER_STACK) mFlingListener.onAdapterAboutToEmpty(adapterCount);
     }
 
-
     private void layoutChildren(int startingIndex, int adapterCount) {
         int maxViewIndex = Math.min(adapterCount, MAX_VISIBLE) - 1;
         while (startingIndex <= maxViewIndex) {
@@ -136,7 +135,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
                 ViewCompat.setScaleY(newUnderChild, scaleFactor);
 
                 if (startingIndex < maxViewIndex)
-                    ViewCompat.setTranslationY(newUnderChild, -dpToPx(12) * startingIndex);
+                    ViewCompat.setTranslationY(newUnderChild, -dpToPx(24) * startingIndex);
                 else {
                     ViewCompat.setTranslationY(newUnderChild, 0);
                 }
@@ -265,8 +264,8 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
             float scaleFactor = minScaleFactor * (1 - scrollProgressPercent) + maxScaleFactor *
                     scrollProgressPercent;
 
-            float fromTransY = i < topIndex ? -dpToPx(12) * i : 0.0f;
-            float toTransY = -dpToPx(12) * (i - 1);
+            float fromTransY = i < topIndex ? -dpToPx(24) * i : 0.0f;
+            float toTransY = -dpToPx(24) * (i - 1);
             float transY = fromTransY * (1 - scrollProgressPercent) + toTransY *
                     scrollProgressPercent;
             if (i < topIndex) {

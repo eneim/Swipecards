@@ -16,8 +16,6 @@ import android.view.animation.OvershootInterpolator;
  * and project Swipe cards.
  * Use with caution dinausaurs might appear!
  */
-
-
 public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     private static final String TAG = OnTopViewTouchListener.class.getSimpleName();
     private static final Object LOCK = new Object();
@@ -65,13 +63,10 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     }
 
     public boolean onTouch(View view, MotionEvent event) {
-
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
-
                 // from http://android-developers.blogspot.com/2010/06/making-sense-of-multitouch.html
                 // Save the ID of this pointer
-
                 mActivePointerId = event.getPointerId(0);
                 float x = 0;
                 float y = 0;
@@ -128,7 +123,6 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-
                 // Find the index of the active pointer and fetch its position
                 final int pointerIndexMove = event.findPointerIndex(mActivePointerId);
                 final float xMove = event.getX(pointerIndexMove);
@@ -154,7 +148,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
                 mFrame.setX(aPosX);
                 mFrame.setY(aPosY);
                 mFrame.setRotation(rotation);
-                onFlingTopView(getScrollProgressPercent());
+                onFlingTopView(getFlingOffset());
                 break;
 
             case MotionEvent.ACTION_CANCEL: {
@@ -167,7 +161,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
         return true;
     }
 
-    private float getScrollProgressPercent() {
+    private float getFlingOffset() {
         float zeroToOneValue = (mFrame.getX() + frameHalfWidth - mParent.getLeft()) /
                 (mParent.getRight() - mParent.getLeft());
         if (zeroToOneValue < 0) zeroToOneValue = 0.f;
@@ -232,7 +226,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
 
         final float fromX = mFrame.getLeft() + mFrame.getTranslationX();
         final float fromY = mFrame.getTop() + mFrame.getTranslationY();
-        final float fromFactor = getScrollProgressPercent();    // -1.0f .. 1.0f
+        final float fromFactor = getFlingOffset();    // -1.0f .. 1.0f
 
         swipeAnimator = ValueAnimator.ofFloat(Math.abs(fromFactor), 1.0f);
         swipeAnimator.setDuration(SELECT_ITEM_DURATION);
@@ -332,7 +326,6 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     private float getRotationWidthOffset() {
         return frameWidth / MAX_COS - frameWidth;
     }
-
 
     public void setRotationDegrees(float degrees) {
         this.BASE_ROTATION_DEGREES = degrees;
