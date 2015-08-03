@@ -44,9 +44,9 @@ public class MyActivity extends Activity {
         arrayAdapter = new ArrayAdapter<>(this, R.layout.item, R.id.helloText, al);
 
         flingContainer.setAdapter(arrayAdapter);
-        flingContainer.setFlingListener(new SwipeFlingAdapterView.OnFlingListener() {
+        flingContainer.setFlingListener(new SwipeFlingAdapterView.OnSwipeListener() {
             @Override
-            public void removeFirstObjectInAdapter() {
+            public void onExited() {
                 // this is the simplest way to delete an object from the Adapter (/AdapterView)
                 Log.d("LIST", "removed object!");
                 al.remove(0);
@@ -54,7 +54,7 @@ public class MyActivity extends Activity {
             }
 
             @Override
-            public void onLeftCardExit(View dataObject) {
+            public void onExitToLeft(View dataObject) {
                 //Do something on the left!
                 //You also have access to the original object.
                 //If you want to use it just cast it (String) dataObject
@@ -62,7 +62,7 @@ public class MyActivity extends Activity {
             }
 
             @Override
-            public void onRightCardExit(View dataObject) {
+            public void onExitToRight(View dataObject) {
                 makeToast(MyActivity.this, "Right!");
             }
 
@@ -76,10 +76,10 @@ public class MyActivity extends Activity {
             }
 
             @Override
-            public void onScroll(float scrollProgressPercent) {
+            public void onFlingTopView(float offset) {
                 View view = flingContainer.getSelectedView();
-                view.findViewById(R.id.item_swipe_right_indicator).setAlpha(scrollProgressPercent < 0 ? -scrollProgressPercent : 0);
-                view.findViewById(R.id.item_swipe_left_indicator).setAlpha(scrollProgressPercent > 0 ? scrollProgressPercent : 0);
+                view.findViewById(R.id.item_swipe_right_indicator).setAlpha(offset < 0 ? -offset : 0);
+                view.findViewById(R.id.item_swipe_left_indicator).setAlpha(offset > 0 ? offset : 0);
             }
         });
 

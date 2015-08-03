@@ -66,7 +66,7 @@ public class MyActivity extends Activity {
         flingContainer.setAdapter(arrayAdapter);
         flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
             @Override
-            public void removeFirstObjectInAdapter() {
+            public void onExited() {
                 // this is the simplest way to delete an object from the Adapter (/AdapterView)
                 Log.d("LIST", "removed object!");
                 al.remove(0);
@@ -74,7 +74,7 @@ public class MyActivity extends Activity {
             }
 
             @Override
-            public void onLeftCardExit(Object dataObject) {
+            public void onExitToLeft(Object dataObject) {
                 //Do something on the left!
                 //You also have access to the original object.
                 //If you want to use it just cast it (String) dataObject
@@ -82,7 +82,7 @@ public class MyActivity extends Activity {
             }
 
             @Override
-            public void onRightCardExit(Object dataObject) {
+            public void onExitToRight(Object dataObject) {
                 Toast.makeText(MyActivity.this, "Right!", Toast.LENGTH_SHORT).show();
             }
 
@@ -116,7 +116,7 @@ You can alternatively use a helpful method which sets in one line both the liste
 
 
 **Adding buttons** is easy. Get the top card listener and trigger manually the right or left animation.
-On the end of the animation the above listeners (e.g. removeFirstObjectInAdapter) will be triggered depending on the direction.
+On the end of the animation the above listeners (e.g. onExited) will be triggered depending on the direction.
  
 
 ```java
