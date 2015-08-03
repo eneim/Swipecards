@@ -25,7 +25,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     private final int INVALID_POINTER_ID = -1;
     private final int TOUCH_ABOVE = 0;
     private final int TOUCH_BELOW = 1;
-    private final int SELECT_ITEM_DURATION = 150;
+    private final int SELECT_ITEM_DURATION = 250;
 
     private final float frameX;
     private final float frameY;
@@ -168,8 +168,8 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     }
 
     private float getScrollProgressPercent() {
-        float zeroToOneValue = (mFrame.getX() + frameHalfWidth - leftBorder()) /
-                (rightBorder() - leftBorder());
+        float zeroToOneValue = (mFrame.getX() + frameHalfWidth - mParent.getLeft()) /
+                (mParent.getRight() - mParent.getLeft());
         if (zeroToOneValue < 0) zeroToOneValue = 0.f;
         if (zeroToOneValue > 1) zeroToOneValue = 1.f;
         return zeroToOneValue * 2f - 1f;
@@ -203,24 +203,24 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     }
 
     private boolean movedBeyondLeftBorder() {
-        return aPosX + frameHalfWidth < leftBorder();
+        return mFrame.getX() + frameHalfWidth < leftBorder();
     }
 
     private boolean movedBeyondRightBorder() {
-        return aPosX + frameHalfWidth > rightBorder();
+        return mFrame.getX() + frameHalfWidth > rightBorder();
     }
 
     public float leftBorder() {
-        return parentWidth / 6.f;
+        return parentWidth / 4.f;
     }
 
     public float rightBorder() {
-        return 5 * parentWidth / 6.f;
+        return 3 * parentWidth / 4.f;
     }
 
     public void swipeTopView(final boolean isSwipeToLeft, final float exitY, long duration) {
         isAnimationRunning = true;
-        if (swipeAnimator.isRunning())
+        if (swipeAnimator != null && swipeAnimator.isRunning())
             swipeAnimator.cancel();
 
         final float exitX;
@@ -232,9 +232,9 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
 
         final float fromX = mFrame.getLeft() + mFrame.getTranslationX();
         final float fromY = mFrame.getTop() + mFrame.getTranslationY();
-        final float fromFactor = getScrollProgressPercent();    // 0.0f .. 1.0f
+        final float fromFactor = getScrollProgressPercent();    // -1.0f .. 1.0f
 
-        swipeAnimator = ValueAnimator.ofFloat(fromFactor, 1.0f);
+        swipeAnimator = ValueAnimator.ofFloat(Math.abs(fromFactor), 1.0f);
         swipeAnimator.setDuration(SELECT_ITEM_DURATION);
         swipeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
