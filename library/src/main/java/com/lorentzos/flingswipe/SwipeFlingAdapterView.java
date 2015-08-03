@@ -326,7 +326,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
         return new FrameLayout.LayoutParams(getContext(), attrs);
     }
 
-    private final float dpToPx(float dp) {
+    private float dpToPx(float dp) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
     }
 
@@ -353,7 +353,6 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
         public void onInvalidated() {
             requestLayout();
         }
-
     }
 
 }

@@ -39,6 +39,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     private float aPosY;
     private float aDownTouchX;
     private float aDownTouchY;
+    private ValueAnimator swipeAnimator;
     // The active pointer is the one currently moving our object.
     private int mActivePointerId = INVALID_POINTER_ID;
     private ViewGroup mParent = null;
@@ -219,6 +220,9 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
 
     public void swipeTopView(final boolean isSwipeToLeft, final float exitY, long duration) {
         isAnimationRunning = true;
+        if (swipeAnimator.isRunning())
+            swipeAnimator.cancel();
+
         final float exitX;
         if (isSwipeToLeft) {
             exitX = -frameWidth - getRotationWidthOffset();
@@ -228,12 +232,11 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
 
         final float fromX = mFrame.getLeft() + mFrame.getTranslationX();
         final float fromY = mFrame.getTop() + mFrame.getTranslationY();
-        final float fromFactor = getScrollProgressPercent();
+        final float fromFactor = getScrollProgressPercent();    // 0.0f .. 1.0f
 
-        ValueAnimator animator = ValueAnimator.ofFloat(Math.abs(fromFactor), 1.0f);
-        animator.setDuration(SELECT_ITEM_DURATION);
-//        animator.setInterpolator(new AccelerateInterpolator());
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        swipeAnimator = ValueAnimator.ofFloat(fromFactor, 1.0f);
+        swipeAnimator.setDuration(SELECT_ITEM_DURATION);
+        swipeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float factor = (float) animation.getAnimatedValue();
@@ -246,7 +249,7 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
             }
         });
 
-        animator.addListener(new AnimatorListenerAdapter() {
+        swipeAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (isSwipeToLeft) {
@@ -260,33 +263,13 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
             }
         });
 
-        animator.start();
-
-//        this.mFrame.animate()
-//                .setDuration(duration)
-//                .setInterpolator(new AccelerateInterpolator())
-//                .x(exitX)
-//                .y(exitY)
-//                .setListener(new AnimatorListenerAdapter() {
-//                    @Override
-//                    public void onAnimationEnd(Animator animation) {
-//                        if (isSwipeToLeft) {
-//                            onExited();
-//                            onExitToLeft(mFrame);
-//                        } else {
-//                            onExited();
-//                            onExitToRight(mFrame);
-//                        }
-//                        isAnimationRunning = false;
-//                    }
-//                })
-//                .rotation(getExitRotation(isSwipeToLeft));
+        swipeAnimator.start();
     }
 
     /**
      * Starts a default left exit animation.
      */
-    public void selectLeft() {
+    public void swipeToLeft() {
         if (!isAnimationRunning) {
             swipeTopView(true, frameY, SELECT_ITEM_DURATION);
         }
@@ -295,12 +278,11 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
     /**
      * Starts a default right exit animation.
      */
-    public void selectRight() {
+    public void swipeToRight() {
         if (!isAnimationRunning) {
             swipeTopView(false, frameY, SELECT_ITEM_DURATION);
         }
     }
-
 
     private float getExitPoint(int exitXPoint) {
         float[] x = new float[2];
@@ -317,6 +299,8 @@ public abstract class OnTopViewTouchListener implements View.OnTouchListener {
         return (float) regression.slope() * exitXPoint + (float) regression.intercept();
     }
 
+    @SuppressWarnings("unused")
+    @Deprecated
     private float getExitRotation(boolean isLeft) {
         float rotation = BASE_ROTATION_DEGREES * 2.f * (parentWidth - frameX) / parentWidth;
         if (touchPosition == TOUCH_BELOW) {

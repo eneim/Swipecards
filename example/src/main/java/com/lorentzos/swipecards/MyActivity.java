@@ -99,12 +99,12 @@ public class MyActivity extends Activity {
         /**
          * Trigger the right event manually.
          */
-        mFlingView.getTopCardListener().selectRight();
+        mFlingView.getTopCardListener().swipeToRight();
     }
 
     @OnClick(R.id.left)
     public void left() {
-        mFlingView.getTopCardListener().selectLeft();
+        mFlingView.getTopCardListener().swipeToLeft();
     }
 
 
