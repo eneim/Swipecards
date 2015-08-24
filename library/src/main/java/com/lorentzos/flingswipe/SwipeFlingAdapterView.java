@@ -243,7 +243,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
                     @Override
                     void onFlingTopView(float offset) {
                         mFlingListener.onFlingTopView(offset);
-                        onTopViewFling(Math.abs(offset));
+                        onFlingTopViewOffset(Math.abs(offset));
                     }
                 };
 
@@ -252,7 +252,7 @@ public class SwipeFlingAdapterView extends BaseFlingAdapterView {
         }
     }
 
-    private void onTopViewFling(float scrollProgressPercent) {
+    private void onFlingTopViewOffset(float scrollProgressPercent) {
         int topIndex = LAST_OBJECT_IN_STACK;
         for (int i = 1; i < topIndex + 1; i++) {
             int viewIndex = topIndex - i;
