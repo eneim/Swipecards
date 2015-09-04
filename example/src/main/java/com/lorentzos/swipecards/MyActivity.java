@@ -11,11 +11,11 @@ import android.widget.Toast;
 
 import com.lorentzos.flingswipe.SwipeFlingAdapterView;
 
-import java.util.ArrayList;
-
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+
+import java.util.ArrayList;
 
 
 public class MyActivity extends Activity {
@@ -50,8 +50,10 @@ public class MyActivity extends Activity {
             public void onTopExited() {
                 // this is the simplest way to delete an object from the Adapter (/AdapterView)
                 Log.d("LIST", "removed object!");
-                al.remove(0);
-                arrayAdapter.notifyDataSetChanged();
+                if (al.size() > 0) {
+                    al.remove(0);
+                    arrayAdapter.notifyDataSetChanged();
+                }
             }
 
             @Override
@@ -70,17 +72,20 @@ public class MyActivity extends Activity {
             @Override
             public void onAdapterAboutToEmpty(int itemsInAdapter) {
                 // Ask for more data here
-                al.add((i + 1) + "");
-                arrayAdapter.notifyDataSetChanged();
-                Log.d("LIST", "notified");
+//                al.add((i + 1) + "");
+//                arrayAdapter.notifyDataSetChanged();
+                Log.d("LIST", "size: " + itemsInAdapter);
                 i++;
             }
 
             @Override
             public void onFlingTopView(float offset) {
-                View view = mFlingView.getSelectedView();
-                view.findViewById(R.id.item_swipe_right_indicator).setAlpha(offset < 0 ? -offset : 0);
-                view.findViewById(R.id.item_swipe_left_indicator).setAlpha(offset > 0 ? offset : 0);
+                View view = mFlingView.getTopView();
+                if (view != null) {
+                    view.findViewById(R.id.item_swipe_right_indicator).setAlpha(offset < 0 ? -offset : 0);
+
+                    view.findViewById(R.id.item_swipe_left_indicator).setAlpha(offset > 0 ? offset : 0);
+                }
             }
         });
 
